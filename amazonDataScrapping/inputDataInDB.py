@@ -18,7 +18,6 @@ def shorteningTheLine(string, length=49):
 
 
 def inputDataIntoTable(path_to_file, table_name, column_names, cursor, connection):
-    i = 0
     with open(path_to_file + ".csv", 'r', encoding='utf-8-sig') as file:
         reader = csv.reader(file)
         next(reader)
@@ -29,15 +28,23 @@ def inputDataIntoTable(path_to_file, table_name, column_names, cursor, connectio
                 category = 0
             elif path_to_file == 'home_audio':
                 category = 1
-            column2_value = shorteningTheLine(row[1], 49)
-            column3_value = shorteningTheLine(row[2], 49)
-            column4_value = shorteningTheLine(row[3], 49)
+            if row[1] != 'N/A':
+                column2_value = float(row[1].replace(',', '.')[1:])
+            else:
+                column2_value = None
+            column3_value = float(row[2][:3])
+            column4_value = int(row[3].replace(',', '').split(' ')[0])
             column5_value = shorteningTheLine(row[4], 150)
 
-            insert_query = f"INSERT INTO {table_name} (id, category_id, {column_names[0]}, {column_names[1]}, {column_names[2]}, " \
-                           f"{column_names[3]}, {column_names[4]}) VALUES " \
-                           f"({i}, {category},'{column1_value}', '{column2_value}', '{column3_value}', '{column4_value}', '{column5_value}');"
-            i += 1
+            if column2_value is not None:
+                insert_query = f"INSERT INTO {table_name} (category_id, {column_names[0]}, {column_names[1]}, {column_names[2]}, " \
+                               f"{column_names[3]}, {column_names[4]}) VALUES " \
+                               f"({category},'{column1_value}', {column2_value}, '{column3_value}', '{column4_value}', '{column5_value}');"
+            else:
+                insert_query = f"INSERT INTO {table_name} (category_id, {column_names[0]}, {column_names[1]}, {column_names[2]}, " \
+                               f"{column_names[3]}, {column_names[4]}) VALUES " \
+                               f"({category},'{column1_value}', NULL, '{column3_value}', '{column4_value}', '{column5_value}');"
+
             cursor.execute(insert_query)
             connection.commit()
 
@@ -66,9 +73,9 @@ if __name__ == '__main__':
             table2_columns = row
             break
         file.close()
-    create_table_query = f"CREATE TABLE IF NOT EXISTS Items (id INTEGER, category_id INTEGER, {table2_columns[0]} VARCHAR(50), " \
-                         f"{table2_columns[1]} VARCHAR(50), {table2_columns[2]} VARCHAR(50)," \
-                         f" {table2_columns[3]} VARCHAR(50), {table2_columns[4]} VARCHAR(150));"
+    create_table_query = f"CREATE TABLE IF NOT EXISTS Items (id SERIAL PRIMARY KEY, category_id INTEGER, {table2_columns[0]} VARCHAR(50), " \
+                         f"{table2_columns[1]} REAL NULL, {table2_columns[2]} REAL, " \
+                         f"{table2_columns[3]} INTEGER, {table2_columns[4]} VARCHAR(150));"
     cur.execute(create_table_query)
     conn.commit()
 
@@ -81,7 +88,8 @@ if __name__ == '__main__':
     cur.execute("ALTER TABLE Items ADD CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES Categories(id)")
     conn.commit()
 
-    cur.execute("DELETE FROM items WHERE id NOT IN ( SELECT MIN(id) AS keep_id FROM items GROUP BY title, price HAVING COUNT(*) > 1 );")
+    cur.execute(
+        "DELETE FROM items WHERE id NOT IN ( SELECT MIN(id) AS keep_id FROM items GROUP BY title, price HAVING COUNT(*) > 1 );")
     conn.commit()
     cur.close()
     conn.close()

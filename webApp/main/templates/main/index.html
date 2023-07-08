@@ -4,32 +4,22 @@
 Home
 {% endblock %}
 {%block content %}
-    <div class="container">
-        <h1>Top Rated Products</h1>
-
-        <div class="row">
-            <div class="col-lg-4">
+ <h1>Top Rated Products</h1>
+ <div class="container">
+      <div class="row">
+{% for item in items %}
+     <div class="col-lg-4">
                 <div class="product-card">
-                    <h3>Product 1</h3>
-                    <p>Description of Product 1</p>
+                   <h1>{{ item.title }}</h1>
+                    <p>Price: {{ item.price }}</p>
+                    <p>Rating: {{ item.rating }}</p>
+                    <p>Number of reviewes: {{ item.reviews }}</p>
                     <a href="#" class="btn btn-primary">Buy Now</a>
+                    <img src="{{ item.image_link }}" alt="Item Image">
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="product-card">
-                    <h3>Product 2</h3>
-                    <p>Description of Product 2</p>
-                    <a href="#" class="btn btn-primary">Buy Now</a>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="product-card">
-                    <h3>Product 3</h3>
-                    <p>Description of Product 3</p>
-                    <a href="#" class="btn btn-primary">Buy Now</a>
-                </div>
-            </div>
-        </div>
-    </div>
+     </div>
+{% endfor %}
+      </div>
+ </div>
 {% endblock %}
 
