@@ -107,6 +107,6 @@ if __name__ == '__main__':
     urls = [
         f'https://www.amazon.com/s?bbn=16225009011&rh=n%3A667846011&dc&qid=1688499750&rnid=16225009011&ref=lp_16225009011_nr_n_6',
         f'https://www.amazon.com/s?bbn=16225009011&rh=n%3A541966&dc&qid=1688505202&rnid=16225009011&ref=lp_16225009011_nr_n_4']
-    file_names = ['home_audio', 'computer_acessories']
+    file_names = ['home_audio', 'computer_accessories']
     for i in range(len(urls)):
         scrapping(urls[i], file_names[i])

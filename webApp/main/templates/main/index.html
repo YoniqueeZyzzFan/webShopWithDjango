@@ -49,7 +49,8 @@ Home
         {% for item in items %}
         <div class="col-lg-4">
             <div class="product-card">
-                <img src="{{ item.image_link }}" alt="Item Image">
+               {% load static %}
+                <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
                 <h1>{{ item.title }}</h1>
                 <p>Price: {{ item.price }} $</p>
                 <p class="rating">Rating: {{ item.rating }} &#9733;</p>

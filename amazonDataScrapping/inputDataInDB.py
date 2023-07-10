@@ -16,6 +16,12 @@ def shorteningTheLine(string, length=49):
     else:
         return string
 
+def shorteningTheImageLink(string, length=49):
+    if len(string) > length:
+        return string[:length] + ".png"
+    else:
+        return string
+
 
 def inputDataIntoTable(path_to_file, table_name, column_names, cursor, connection):
     with open(path_to_file + ".csv", 'r', encoding='utf-8-sig') as file:
@@ -28,13 +34,14 @@ def inputDataIntoTable(path_to_file, table_name, column_names, cursor, connectio
                 category = 0
             elif path_to_file == 'home_audio':
                 category = 1
-            if row[1] != 'N/A':
+            if row[1] != 'N/A' and row[1] != '':
                 column2_value = float(row[1].replace(',', '.')[1:])
             else:
                 column2_value = None
             column3_value = float(row[2][:3])
             column4_value = int(row[3].replace(',', '').split(' ')[0])
-            column5_value = shorteningTheLine(row[4], 150)
+            column5_value = row[4][:-4] + ".png"
+            column5_value = shorteningTheLine(column5_value, 150)
 
             if column2_value is not None:
                 insert_query = f"INSERT INTO {table_name} (category_id, {column_names[0]}, {column_names[1]}, {column_names[2]}, " \
@@ -51,7 +58,7 @@ def inputDataIntoTable(path_to_file, table_name, column_names, cursor, connectio
 
 if __name__ == '__main__':
     pass_path = "D:\\Programs\\PostgresSQL\\1_pass.txt"
-    column_names = getCSV(os.getcwd())
+    column_names = ['computer_accessories', 'home_audio']
     password = ''
     with open(pass_path, 'r') as file:
         password = file.read()
@@ -65,7 +72,7 @@ if __name__ == '__main__':
         cur.execute(insert_query)
         conn.commit()
     table2_columns = []
-    with open(column_names[0] + ".csv", 'r') as file:
+    with open(column_names[0] + "_ameliorated" + ".csv", 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             for i in range(len(row)):
@@ -80,7 +87,8 @@ if __name__ == '__main__':
     conn.commit()
 
     for i in column_names:
-        inputDataIntoTable(i, "Items", table2_columns, cur, conn)
+        file = i + "_ameliorated"
+        inputDataIntoTable(file, "Items", table2_columns, cur, conn)
 
     cur.execute("ALTER TABLE Categories ADD CONSTRAINT pk_category PRIMARY KEY (id)")
     conn.commit()
