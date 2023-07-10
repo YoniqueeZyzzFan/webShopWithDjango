@@ -3,23 +3,84 @@
 {% block title %}
 Home
 {% endblock %}
-{%block content %}
- <h1>Top Rated Products</h1>
- <div class="container">
-      <div class="row">
-{% for item in items %}
-     <div class="col-lg-4">
-                <div class="product-card">
-                   <h1>{{ item.title }}</h1>
-                    <p>Price: {{ item.price }}</p>
-                    <p>Rating: {{ item.rating }}</p>
-                    <p>Number of reviewes: {{ item.reviews }}</p>
-                    <a href="#" class="btn btn-primary">Buy Now</a>
-                    <img src="{{ item.image_link }}" alt="Item Image">
-                </div>
-     </div>
-{% endfor %}
-      </div>
- </div>
-{% endblock %}
 
+{% block content %}
+<style>
+.product-card {
+    height: 500px;
+    text-align: center;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.product-card h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.product-card p {
+    margin-bottom: 5px;
+}
+
+.product-card .btn-wrapper {
+    margin-top: auto;
+}
+
+.product-card .btn {
+    align-self: center;
+}
+
+.product-card .rating {
+    margin-top: 10px;
+}
+
+.product-card img {
+    max-width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+}
+</style>
+
+<h1 class="animated-heading">Top Rated Products</h1>
+<div class="container">
+    <div class="row">
+        {% for item in items %}
+        <div class="col-lg-4">
+            <div class="product-card">
+                <img src="{{ item.image_link }}" alt="Item Image">
+                <h1>{{ item.title }}</h1>
+                <p>Price: {{ item.price }} $</p>
+                <p class="rating">Rating: {{ item.rating }} &#9733;</p>
+                <p>Number of reviews: {{ item.reviews }}</p>
+                <div class="btn-wrapper">
+                    <a href="#" class="btn btn-primary">Buy Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.animated-heading {
+    background: linear-gradient(to right, #ff00cc, #3333cc, #66ccff, #ff99cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-animation 5s linear infinite;
+}
+
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+</style>
+{% endblock %}
