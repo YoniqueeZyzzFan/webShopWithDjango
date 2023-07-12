@@ -1,11 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-
-class User(AbstractUser):
-    class Meta:
-        db_table = 'custom_user'
-        swappable = 'AUTH_USER_MODEL'
+from django.contrib.auth import get_user_model
 
 
 class Categories(models.Model):
@@ -22,7 +16,7 @@ class Categories(models.Model):
 
 
 class Item(models.Model):
-    category_id = models.CharField('categoryId', max_length=50)
+    category = models.ForeignKey(Categories, on_delete=models.CASCADE)
     title = models.CharField('title', max_length=50)
     price = models.FloatField()
     rating = models.FloatField()
@@ -36,3 +30,41 @@ class Item(models.Model):
         db_table = 'items'
         verbose_name = 'Item'
         verbose_name_plural = 'Items'
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='cart'
+    )
+
+    def __str__(self):
+        return f"Cart for {self.user.username}"
+
+    def get_total(self):
+        cart_items = self.cartitem_set.all()
+        total = sum(item.get_total_price() for item in cart_items)
+        return total
+
+    class Meta:
+        db_table = 'cart'
+        verbose_name = 'Cart'
+        verbose_name_plural = 'Carts'
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.item.title} - Quantity: {self.quantity}"
+
+    def get_total_price(self):
+        return self.quantity * self.item.price
+
+    class Meta:
+        db_table = 'cart_item'
+        verbose_name = 'Cart Item'
+        verbose_name_plural = 'Cart Items'

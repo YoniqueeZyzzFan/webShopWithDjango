@@ -41,30 +41,7 @@ Home
     max-height: 250px;
     object-fit: contain;
 }
-</style>
 
-<h1 class="animated-heading">Top Rated Products</h1>
-<div class="container">
-    <div class="row">
-        {% for item in items %}
-        <div class="col-lg-4">
-            <div class="product-card">
-               {% load static %}
-                <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
-                <h1>{{ item.title }}</h1>
-                <p>Price: {{ item.price }} $</p>
-                <p class="rating">Rating: {{ item.rating }} &#9733;</p>
-                <p>Number of reviews: {{ item.reviews }}</p>
-                <div class="btn-wrapper">
-                    <a href="#" class="btn btn-primary">Buy Now</a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<style>
 .animated-heading {
     background: linear-gradient(to right, #ff00cc, #3333cc, #66ccff, #ff99cc);
     -webkit-background-clip: text;
@@ -83,5 +60,80 @@ Home
         background-position: 0% 50%;
     }
 }
+
+
+
+
 </style>
+<h1 class="animated-heading">Top Rated Products</h1>
+<div class="container">
+    <div class="row">
+        {% for item in items %}
+        <div class="col-lg-4">
+            <div class="product-card">
+                {% load static %}
+                <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
+                <h1>{{ item.title }}</h1>
+                <p>Price: {{ item.price }} $</p>
+                <p class="rating">Rating: {{ item.rating }} &#9733;</p>
+                <p>Number of reviews: {{ item.reviews }}</p>
+                <div class="btn-wrapper">
+                    <a href="#" class="btn btn-primary buy-now-btn" data-item-id="{{ item.id }}">Buy Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    function csrfSafeMethod(method) {
+        return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+    }
+    var csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            }
+        }
+    });
+
+    $('.buy-now-btn').click(function(event) {
+        event.preventDefault();
+
+        var itemId = $(this).data('item-id');
+        var data = {
+            'item_id': itemId
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/add-to-cart/',
+            data: data,
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(xhr, errmsg, err) {
+                console.log(xhr.status + ': ' + xhr.responseText);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

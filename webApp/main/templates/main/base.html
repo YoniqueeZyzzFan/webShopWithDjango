@@ -111,44 +111,51 @@
         .product-card p {
             font-size: 14px;
         }
+
+
     </style>
     <title>{% block title %} {% endblock %}</title>
 </head>
 <body>
-    <nav class="navbar">
-        <div>
-            <a class="navbar-brand" href="{% url 'Home' %}">
-                <i class="fas fa-home"></i>
-                Main Page
-            </a>
-            <a class="navbar-brand" href="{% url 'Catalogue'  %}">
-                <i class="fas fa-book"></i>
-                Catalogue
-            </a>
-            <a class="navbar-brand" href="{% url 'About' %}">
-                <i class="fas fa-question-circle"></i>
-                About
-            </a>
-        </div>
-        <div>
-            {% if user.is_authenticated %}
-                <a class="navbar-brand" href="{% url 'Logout' %}">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </a>
-            {% else %}
-                <a class="navbar-brand" href="{% url 'Register' %}">
-                    <i class="fas fa-user-plus"></i>
-                    Register
-                </a>
-                <a class="navbar-brand" href="{% url 'Login' %}">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
-                </a>
-            {% endif %}
-        </div>
-    </nav>
-    {% block content %} {% endblock %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<nav class="navbar">
+    <div>
+        <a class="navbar-brand" href="{% url 'Home' %}">
+            <i class="fas fa-home"></i>
+            Main Page
+        </a>
+        <a class="navbar-brand" href="{% url 'Catalogue'  %}">
+            <i class="fas fa-book"></i>
+            Catalogue
+        </a>
+        <a class="navbar-brand" href="{% url 'About' %}">
+            <i class="fas fa-question-circle"></i>
+            About
+        </a>
+    </div>
+    <div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <a class="navbar-brand" href="{% url 'Cart' %}">
+            <i class="fas fa-shopping-cart"></i>
+            Cart
+        </a>
+        {% if user.is_authenticated %}
+        <a class="navbar-brand" href="{% url 'Logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </a>
+        {% else %}
+        <a class="navbar-brand" href="{% url 'Register' %}">
+            <i class="fas fa-user-plus"></i>
+            Register
+        </a>
+        <a class="navbar-brand" href="{% url 'Login' %}">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+        </a>
+        {% endif %}
+    </div>
+</nav>
+{% block content %} {% endblock %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
 </body>
 </html>
