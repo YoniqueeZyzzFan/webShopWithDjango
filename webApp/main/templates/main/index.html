@@ -5,6 +5,26 @@ Home
 {% endblock %}
 
 {% block content %}
+<h1 class="animated-heading">Top Rated Products</h1>
+<div class="container">
+    <div class="row">
+        {% for item in items %}
+        <div class="col-lg-4">
+            <div class="product-card">
+                {% load static %}
+                <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
+                <h1>{{ item.title }}</h1>
+                <p>Price: {{ item.price }} $</p>
+                <p class="rating">Rating: {{ item.rating }} &#9733;</p>
+                <p>Number of reviews: {{ item.reviews }}</p>
+                <div class="btn-wrapper">
+                    <a class="btn btn-primary buy-now-btn" data-item-id="{{ item.id }}">Buy Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 <style>
 .product-card {
     height: 500px;
@@ -60,31 +80,7 @@ Home
         background-position: 0% 50%;
     }
 }
-
-
-
-
 </style>
-<h1 class="animated-heading">Top Rated Products</h1>
-<div class="container">
-    <div class="row">
-        {% for item in items %}
-        <div class="col-lg-4">
-            <div class="product-card">
-                {% load static %}
-                <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
-                <h1>{{ item.title }}</h1>
-                <p>Price: {{ item.price }} $</p>
-                <p class="rating">Rating: {{ item.rating }} &#9733;</p>
-                <p>Number of reviews: {{ item.reviews }}</p>
-                <div class="btn-wrapper">
-                    <a href="#" class="btn btn-primary buy-now-btn" data-item-id="{{ item.id }}">Buy Now</a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {

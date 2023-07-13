@@ -9,6 +9,24 @@ from django.db.models import Avg
 from .forms import RegistrationForm, LoginForm
 
 
+def update_quantity(request):
+    item_id = request.POST.get('item_id')
+    action = request.POST.get('action')
+    item = get_object_or_404(Item, pk=item_id)
+    cart = Cart.objects.get(user=request.user)
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, item=item)
+    if action == 'increment':
+        cart_item.quantity += 1
+    elif action == 'decrement':
+        cart_item.quantity -= 1
+    if cart_item.quantity <= 0:
+        cart_item.delete()
+    else:
+        cart_item.save()
+
+    return JsonResponse({'success': True})
+
+
 def cart(request):
     if request.user.is_authenticated:
         user = request.user
@@ -24,8 +42,11 @@ def add_to_cart(request):
         item_id = request.POST.get('item_id')
         item = get_object_or_404(Item, pk=item_id)
         cart, created = Cart.objects.get_or_create(user=request.user)
-        CartItem.objects.get_or_create(cart=cart, item=item)
-        return JsonResponse({'success': False})
+        cart_item, created = CartItem.objects.update_or_create(cart=cart, item=item, defaults={'quantity': 1})
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+        return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
 
