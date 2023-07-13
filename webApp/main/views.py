@@ -2,7 +2,6 @@ from django.contrib import messages
 from django.contrib.auth import logout, authenticate, login
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 from django.db.models import Avg
@@ -32,9 +31,11 @@ def cart(request):
         user = request.user
         cart = user.cart
         items = cart.cartitem_set.all()
+        total = sum(item.get_total_price() for item in items)
     else:
         items = []
-    return render(request, 'main/cart.html', {'items': items})
+        total = 0
+    return render(request, 'main/cart.html', {'items': items, 'total': total})
 
 
 def add_to_cart(request):
