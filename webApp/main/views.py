@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import *
-from django.db.models import Avg
+from django.db.models import Avg, F
 from .forms import RegistrationForm, LoginForm
 
 
@@ -30,7 +30,7 @@ def cart(request):
     if request.user.is_authenticated:
         user = request.user
         cart = user.cart
-        items = cart.cartitem_set.all()
+        items = cart.cartitem_set.order_by('id')
         total = sum(item.get_total_price() for item in items)
     else:
         items = []
@@ -43,11 +43,17 @@ def add_to_cart(request):
         item_id = request.POST.get('item_id')
         item = get_object_or_404(Item, pk=item_id)
         cart, created = Cart.objects.get_or_create(user=request.user)
-        cart_item, created = CartItem.objects.update_or_create(cart=cart, item=item, defaults={'quantity': 1})
-        if not created:
-            cart_item.quantity += 1
-            cart_item.save()
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, item=item, defaults={'quantity': 0})
+
+        if created:
+            cart_item.quantity = 1
+        else:
+            cart_item.quantity = F('quantity') + 1
+
+        cart_item.save()
+
         return JsonResponse({'success': True})
+
     return JsonResponse({'success': False})
 
 
@@ -95,8 +101,15 @@ def index(request):
     average_reviews_count = Item.objects.aggregate(average_reviews_count=Avg('reviews'))['average_reviews_count']
     filtered_items = Item.objects.filter(rating__gte=4.5, reviews__gt=average_reviews_count)[:9]
     items = filtered_items.all()
-    return render(request, 'main/index.html', {'items': items})
 
+    if request.user.is_authenticated:
+        user = request.user
+        cart = user.cart
+        cart_items = cart.cartitem_set.order_by('id')
+        cart_total = sum(item.get_total_price() for item in cart_items)
+        return render(request, 'main/index.html', {'items': items, 'cart_items': cart_items, 'cart_total': cart_total})
+
+    return render(request, 'main/index.html', {'items': items})
 
 def catalogue(request, category_id=-1):
     categories = Categories.objects.all()

@@ -111,8 +111,6 @@
         .product-card p {
             font-size: 14px;
         }
-
-
     </style>
     <title>{% block title %} {% endblock %}</title>
 </head>
@@ -135,6 +133,10 @@
     <div>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <a class="navbar-brand" href="{% url 'Cart' %}">
+            {% load static %}
+            {% if cart_items %}
+                <img src="{% static 'fire.gif' %}" alt="Fire" width="50" height="50">
+            {% endif %}
             <i class="fas fa-shopping-cart"></i>
             Cart
         </a>
