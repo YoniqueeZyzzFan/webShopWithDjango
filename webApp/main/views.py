@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import logout, authenticate, login
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-
+from django.core.paginator import Paginator
 from .models import *
 from django.db.models import Avg, F
 from .forms import RegistrationForm, LoginForm
@@ -58,6 +58,7 @@ def cart(request):
         items = []
         total = 0
     return render(request, 'main/cart.html', {'items': items, 'total': total, 'cart_items': cart_items})
+
 
 def add_to_cart(request):
     if request.method == 'POST':
@@ -138,13 +139,19 @@ def catalogue(request, category_id=-1):
         items = Item.objects.filter(category_id=category_id)
     else:
         items = Item.objects.all()
+
+    paginator = Paginator(items, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     if request.user.is_authenticated:
         user = request.user
         cart = user.cart
         cart_items = cart.cartitem_set.order_by('id')
         return render(request, 'main/catalogue.html',
-                      {'categories': categories, 'items': items, 'cart_items': cart_items})
-    return render(request, 'main/catalogue.html', {'categories': categories, 'items': items})
+                      {'categories': categories, 'page_obj': page_obj, 'cart_items': cart_items})
+
+    return render(request, 'main/catalogue.html', {'categories': categories, 'page_obj': page_obj})
 
 
 def about(request):
