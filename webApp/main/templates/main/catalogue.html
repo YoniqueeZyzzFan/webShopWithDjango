@@ -1,0 +1,181 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+Catalogue
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="category-buttons d-flex flex-column">
+                <a href="{% url 'Catalogue' %}" class="btn btn-primary mb-3"> All </a>
+                {% for category in categories %}
+                <a href="{% url 'Catalogue' category_id=category.id %}" class="btn btn-primary mb-3">{{ category }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="row">
+                {% for item in page_obj %}
+                <div class="col-lg-4 mb-3">
+                    <div class="product-card h-100">
+                        <h1>{{ item.title }}</h1>
+                        <p>Price: {{ item.price }} $</p>
+                        <p>Rating: {{ item.rating }} &#9733;</p>
+                        <p>Number of reviews: {{ item.reviews }}</p>
+                        <a class="btn btn-primary buy-now-btn" data-item-id="{{ item.id }}" style="margin-top: -11px;">Buy Now</a>
+                        {% load static %}
+                        <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1" class="pagination-link">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link">&lsaquo; Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">{{ page_obj.number }}</span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="pagination-link">Next &rsaquo;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link">Last &raquo;</a>
+                    {% endif %}
+                </span>
+                <span class="page-selector">
+                    <form action="" method="get" class="form-inline">
+                        <label for="page-select">Go to Page:</label>
+                        <select id="page-select" name="page" class="form-control">
+                            {% for num in page_obj.paginator.page_range %}
+                            <option value="{{ num }}" {% if num == page_obj.number %}selected{% endif %}>{{ num }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Go</button>
+                    </form>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .category-buttons {
+        flex-direction: column;
+    }
+
+    .category-buttons .btn {
+        width: 100%;
+    }
+
+    .product-card {
+        height: 450px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .product-card img {
+        width: 100%;
+        height: 250px;
+        margin-top: 10px;
+        object-fit: contain;
+    }
+
+    .product-card .btn {
+        margin-top: 10px;
+        align-self: center;
+    }
+
+    .pagination {
+        margin-top: 40px;
+        text-align: left;
+    }
+
+    .pagination .step-links {
+        display: flex;
+        align-items: center;
+    }
+
+    .pagination .pagination-link {
+        display: inline-block;
+        padding: 8px 12px;
+        margin-right: 5px;
+        background-color: #4CAF50;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .pagination .pagination-link:hover {
+        background-color: #45a049;
+    }
+
+    .pagination .current-page {
+        display: inline-block;
+        padding: 8px 12px;
+        margin-right: 5px;
+        background-color: #333;
+        color: #fff;
+        border-radius: 5px;
+    }
+
+    .page-selector {
+        margin-top: 10px;
+    }
+</style>
+<script>
+$(document).ready(function() {
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    function csrfSafeMethod(method) {
+        return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+    }
+    var csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            }
+        }
+    });
+
+    $('.buy-now-btn').click(function(event) {
+        event.preventDefault();
+
+        var itemId = $(this).data('item-id');
+        var data = {
+            'item_id': itemId
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/add-to-cart/',
+            data: data,
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(xhr, errmsg, err) {
+                console.log(xhr.status + ': ' + xhr.responseText);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'main/base.html' %}
+
+{% block title %}
+Catalogue
+{% endblock %}
+
+{% block content %}
+<style>
+    th, td {
+        padding: 5px;
+    }
+
+    .item-title {
+        width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<h1>Cart</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Overall</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% csrf_token %}
+        {% for item in items %}
+        <tr>
+            <td class="item-title">{{ item.item.title }}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" type="button"
+                        onclick="update_quantity('{{ item.item.id }}', 'decrement')">-
+                </button>
+                {{ item.quantity }}
+                <button class="btn btn-sm btn-primary" type="button"
+                        onclick="update_quantity('{{ item.item.id }}', 'increment')">+
+                </button>
+            </td>
+            <td>{{ item.item.price|floatformat:2 }} $</td>
+            <td>{{ item.get_total_price|floatformat:2 }} $</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>Result: {{ total|floatformat:2 }} $</p>
+{% if items %}
+    <button class="btn btn-primary mb-3" type="button" onclick="generateQRCode()">Make order</button>
+    <div id="qrCodeContainer"></div>
+{% endif %}
+
+<script>
+function generateQRCode() {
+    const totalAmount = '{{ total|floatformat:2 }}';
+    const url = '{% url "generate_qr_code" %}?total_amount=' + totalAmount;
+
+    fetch(url)
+    .then(response => {
+        if (response.ok) {
+            return response.blob();
+        }
+        throw new Error('Network response was not ok.');
+    })
+    .then(blob => {
+        const qrCodeContainer = document.getElementById('qrCodeContainer');
+        qrCodeContainer.innerHTML = '<img src="' + URL.createObjectURL(blob) + '" alt="QR Code">';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+    function update_quantity(itemId, action) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const url = '{% url "update_quantity" %}';
+
+        const formData = new FormData();
+        formData.append('item_id', itemId);
+        formData.append('action', action);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+{% endblock %}
