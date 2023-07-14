@@ -1,11 +1,33 @@
+from io import BytesIO
+
 from django.contrib import messages
 from django.contrib.auth import logout, authenticate, login
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import *
 from django.db.models import Avg, F
 from .forms import RegistrationForm, LoginForm
+
+import qrcode
+
+
+def generate_qr_code(request):
+    total_amount = request.GET.get('total_amount', '0')
+    payment_link = "example" + str(total_amount)
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(payment_link)
+    qr.make(fit=True)
+    qr_image = qr.make_image(fill_color="black", back_color="white")
+    response = HttpResponse(content_type="image/png")
+    qr_image.save(response, "PNG")
+    return response
 
 
 def update_quantity(request):
@@ -27,15 +49,17 @@ def update_quantity(request):
 
 
 def cart(request):
+    cart_items = []
     if request.user.is_authenticated:
         user = request.user
         cart = user.cart
         items = cart.cartitem_set.order_by('id')
         total = sum(item.get_total_price() for item in items)
+        cart_items = cart.cartitem_set.order_by('id')
     else:
         items = []
         total = 0
-    return render(request, 'main/cart.html', {'items': items, 'total': total})
+    return render(request, 'main/cart.html', {'items': items, 'total': total, 'cart_items': cart_items})
 
 
 def add_to_cart(request):
@@ -106,10 +130,10 @@ def index(request):
         user = request.user
         cart = user.cart
         cart_items = cart.cartitem_set.order_by('id')
-        cart_total = sum(item.get_total_price() for item in cart_items)
-        return render(request, 'main/index.html', {'items': items, 'cart_items': cart_items, 'cart_total': cart_total})
+        return render(request, 'main/index.html', {'items': items, 'cart_items': cart_items})
 
     return render(request, 'main/index.html', {'items': items})
+
 
 def catalogue(request, category_id=-1):
     categories = Categories.objects.all()
@@ -117,6 +141,12 @@ def catalogue(request, category_id=-1):
         items = Item.objects.filter(category_id=category_id)
     else:
         items = Item.objects.all()
+    if request.user.is_authenticated:
+        user = request.user
+        cart = user.cart
+        cart_items = cart.cartitem_set.order_by('id')
+        return render(request, 'main/catalogue.html',
+                      {'categories': categories, 'items': items, 'cart_items': cart_items})
     return render(request, 'main/catalogue.html', {'categories': categories, 'items': items})
 
 

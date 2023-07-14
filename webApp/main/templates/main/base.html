@@ -135,7 +135,7 @@
         <a class="navbar-brand" href="{% url 'Cart' %}">
             {% load static %}
             {% if cart_items %}
-                <img src="{% static 'fire.gif' %}" alt="Fire" width="50" height="50">
+                <img src="{% static 'fire.gif' %}" alt="Fire" width="50" height="50" style="margin-bottom:15px;">
             {% endif %}
             <i class="fas fa-shopping-cart"></i>
             Cart
@@ -159,5 +159,7 @@
 </nav>
 {% block content %} {% endblock %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
 </html>

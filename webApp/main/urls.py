@@ -12,5 +12,6 @@ urlpatterns = [
     path('login/<str:register>/', views.user_login, name='login'),
     path('Logout/', views.user_logout, name='Logout'),
     path('add-to-cart/', views.add_to_cart, name='add_to_cart'),
-    path('update-quantity/', views.update_quantity, name='update_quantity')
+    path('update-quantity/', views.update_quantity, name='update_quantity'),
+    path('generate_qr_code', views.generate_qr_code, name='generate_qr_code')
 ]
