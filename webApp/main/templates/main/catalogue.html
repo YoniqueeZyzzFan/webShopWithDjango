@@ -14,6 +14,49 @@ Catalogue
                 <a href="{% url 'Catalogue' category_id=category.id %}" class="btn btn-primary mb-3">{{ category }}</a>
                 {% endfor %}
             </div>
+            <div class="price-range">
+                <form action="" method="get" class="form-inline">
+                    <div class="form-group">
+                        <label for="min-price">Min Price:</label>
+                        <input type="number" id="min-price" name="min_price" class="form-control" min="0"
+                            style="height:30px;" value="{{ request.GET.min_price }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="max-price">Max Price:</label>
+                        <input type="number" id="max-price" name="max_price" class="form-control" min="0"
+                            style="height:30px" value="{{ request.GET.max_price }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:18px;">Apply</button>
+                </form>
+            </div>
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" class="pagination-link">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" class="pagination-link">&lsaquo; Previous</a>
+                    {% endif %}
+
+                    <span class="current-page">{{ page_obj.number }}</span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" class="pagination-link">Next &rsaquo;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" class="pagination-link">Last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="page-selector">
+                <form action="" method="get" class="form-inline">
+                    <label for="page-select">Go to Page:</label>
+                    <select id="page-select" name="page" class="form-control" style="width: 80px;">
+                        {% for num in page_obj.paginator.page_range %}
+                        <option value="{{ num }}" {% if num == page_obj.number %}selected{% endif %}>{{ num }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="min_price" value="{{ request.GET.min_price }}">
+                    <input type="hidden" name="max_price" value="{{ request.GET.max_price }}">
+                    <button type="submit" class="btn btn-primary">Go</button>
+                </form>
+            </div>
         </div>
         <div class="col-lg-9">
             <div class="row">
@@ -24,38 +67,13 @@ Catalogue
                         <p>Price: {{ item.price }} $</p>
                         <p>Rating: {{ item.rating }} &#9733;</p>
                         <p>Number of reviews: {{ item.reviews }}</p>
-                        <a class="btn btn-primary buy-now-btn" data-item-id="{{ item.id }}" style="margin-top: -11px;">Buy Now</a>
+                        <a class="btn btn-primary buy-now-btn" data-item-id="{{ item.id }}"
+                            style="margin-top: -11px;">Buy Now</a>
                         {% load static %}
                         <img src="{% static 'productImages/'|add:item.image_link %}" alt="Item Image">
                     </div>
                 </div>
                 {% endfor %}
-            </div>
-            <div class="pagination">
-                <span class="step-links">
-                    {% if page_obj.has_previous %}
-                    <a href="?page=1" class="pagination-link">&laquo; First</a>
-                    <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link">&lsaquo; Previous</a>
-                    {% endif %}
-
-                    <span class="current-page">{{ page_obj.number }}</span>
-
-                    {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="pagination-link">Next &rsaquo;</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link">Last &raquo;</a>
-                    {% endif %}
-                </span>
-                <span class="page-selector">
-                    <form action="" method="get" class="form-inline">
-                        <label for="page-select">Go to Page:</label>
-                        <select id="page-select" name="page" class="form-control">
-                            {% for num in page_obj.paginator.page_range %}
-                            <option value="{{ num }}" {% if num == page_obj.number %}selected{% endif %}>{{ num }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-primary">Go</button>
-                    </form>
-                </span>
             </div>
         </div>
     </div>
@@ -127,55 +145,78 @@ Catalogue
     .page-selector {
         margin-top: 10px;
     }
+
+    .price-range {
+        margin-top: 20px;
+    }
+
+    .price-range form {
+        display: flex;
+        align-items: center;
+    }
+
+    .price-range .form-group {
+        margin-right: 10px;
+    }
+
+    .price-range label {
+        margin-right: 5px;
+    }
+
+    .price-range input {
+        width: 100px;
+    }
 </style>
 <script>
-$(document).ready(function() {
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    $(document).ready(function () {
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
-    function csrfSafeMethod(method) {
-        return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
-    }
-    var csrftoken = getCookie('csrftoken');
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader('X-CSRFToken', csrftoken);
-            }
+
+        function csrfSafeMethod(method) {
+            return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
         }
-    });
 
-    $('.buy-now-btn').click(function(event) {
-        event.preventDefault();
-
-        var itemId = $(this).data('item-id');
-        var data = {
-            'item_id': itemId
-        };
-
-        $.ajax({
-            type: 'POST',
-            url: '/add-to-cart/',
-            data: data,
-            success: function(response) {
-                console.log(response);
-            },
-            error: function(xhr, errmsg, err) {
-                console.log(xhr.status + ': ' + xhr.responseText);
+        var csrftoken = getCookie('csrftoken');
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                }
             }
         });
+
+        $('.buy-now-btn').click(function (event) {
+            event.preventDefault();
+
+            var itemId = $(this).data('item-id');
+            var data = {
+                'item_id': itemId
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/add-to-cart/',
+                data: data,
+                success: function (response) {
+                    console.log(response);
+                },
+                error: function (xhr, errmsg, err) {
+                    console.log(xhr.status + ': ' + xhr.responseText);
+                }
+            });
+        });
     });
-});
 </script>
 {% endblock %}
