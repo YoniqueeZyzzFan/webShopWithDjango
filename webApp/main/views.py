@@ -1,5 +1,3 @@
-from io import BytesIO
-
 from django.contrib import messages
 from django.contrib.auth import logout, authenticate, login
 from django.http import JsonResponse, HttpResponse
@@ -60,7 +58,6 @@ def cart(request):
         items = []
         total = 0
     return render(request, 'main/cart.html', {'items': items, 'total': total, 'cart_items': cart_items})
-
 
 def add_to_cart(request):
     if request.method == 'POST':
