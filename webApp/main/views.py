@@ -3,9 +3,16 @@ from django.contrib.auth import logout, authenticate, login
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
+from rest_framework import generics
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
+
 from .models import *
+from .serializers import ItemSerializer
 from django.db.models import Avg, F
 from .forms import RegistrationForm, LoginForm
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 import qrcode
 
@@ -132,6 +139,39 @@ def index(request):
 
     return render(request, 'main/index.html', {'items': items})
 
+
+class IndexView(APIView):
+    def get(self, request):
+        average_reviews_count = Item.objects.aggregate(average_reviews_count=Avg('reviews'))['average_reviews_count']
+        filtered_items = Item.objects.filter(rating__gte=4.5, reviews__gt=average_reviews_count)[:9]
+        items = filtered_items.all()
+
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data)
+
+
+class CatalogueAPIView(ListAPIView):
+    serializer_class = ItemSerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        category_id = self.kwargs.get('category_id', -1)
+        if category_id != -1:
+            items = Item.objects.filter(category_id=category_id)
+        else:
+            items = Item.objects.all()
+
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+
+        if min_price and max_price:
+            items = items.filter(price__range=(min_price, max_price))
+        elif min_price:
+            items = items.filter(price__gte=min_price)
+        elif max_price:
+            items = items.filter(price__lte=max_price)
+
+        return items
 
 def catalogue(request, category_id=-1):
     categories = Categories.objects.all()
